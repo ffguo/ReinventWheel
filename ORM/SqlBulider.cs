@@ -18,30 +18,38 @@ namespace ORM
         private static readonly string _findSql;
         private static readonly string _updateSql;
         private static readonly string _deleteSql;
+        private static readonly string _selectSql;
 
         static SqlBulider()
         {
             var type = typeof(T);
             var exceptKeyCloumns = type.GetProperties().NoKey();
             KeyName = type.GetKeyName();
-            _findSql = $"SELECT {string.Join(",", type.GetProperties().Select(a => a.GetName<MyPropertyAttribute>()))} FROM {type.GetName<MyTableAttribute>()} WHERE {KeyName}=@{KeyName}";
+            _selectSql = $"SELECT {string.Join(",", type.GetProperties().Select(a => a.GetName<MyPropertyAttribute>()))} FROM {type.GetName<MyTableAttribute>()}";
+            _findSql = $"{_selectSql} WHERE {KeyName}=@{KeyName}";
             _insertSql = $"INSERT INTO [{type.GetName<MyTableAttribute>()}]({string.Join(",", exceptKeyCloumns.Select(a => a.Name))}) VALUES({string.Join(",", exceptKeyCloumns.Select(a => "@" + a.Name))})";
             _updateSql = $"UPDATE [{type.GetName<MyTableAttribute>()}] SET {string.Join(",", exceptKeyCloumns.Select(a =>$"{a.Name} = @{a.Name}"))} WHERE {KeyName}=@{KeyName}";
             _deleteSql = $"DELETE FROM [{type.GetName<MyTableAttribute>()}] WHERE {KeyName}=@{KeyName}";
         }
 
-        public static string GetSql(SqlType sqlType)
+        public static string GetSql(SqlType sqlType, string where = null)
         {
+            string sql = string.Empty;
             if (sqlType == SqlType.Find)
-                return _findSql;
+                sql = _findSql;
             else if (sqlType == SqlType.Insert)
-                return _insertSql;
+                sql = _insertSql;
             else if (sqlType == SqlType.Update)
-                return _updateSql;
+                sql = _updateSql;
             else if (sqlType == SqlType.Delete)
-                return _deleteSql;
+                sql = _deleteSql;
+            else if (sqlType == SqlType.Select)
+                sql = _selectSql;
 
-            return string.Empty;
+            if (!string.IsNullOrEmpty(where))
+                sql += $" WHERE {where}";
+
+            return sql;
         }
     }
 }

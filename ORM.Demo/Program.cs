@@ -36,10 +36,18 @@ namespace ORM.Demo
             }
 
             {
-                var blogDal = new MyORM<Blogs>();
+                //var blogDal = new MyORM<Blogs>();
                 //var blog = blogDal.Find(3);
                 //blog.Name += "123";
-                blogDal.UpdateCondition(new Blogs { IsDeleted = true }, a => a.Name == "123");
+                //string name = "123";
+                //blogDal.UpdateCondition(new Blogs { IsDeleted = true }, a => a.Name == name && a.IsDeleted == true);
+            }
+
+            {
+                var blogDal = new MyORM<Blogs>();
+                bool isDeleted = false;
+                var list = blogDal.Where(a => a.IsDeleted == isDeleted);
+                Console.WriteLine(list.Count);
             }
 
             Console.ReadKey();

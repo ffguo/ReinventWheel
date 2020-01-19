@@ -29,24 +29,10 @@ namespace ORM
             var type = typeof(T);
             var sql = SqlBulider<T>.GetSql(SqlType.Find);
             var parameters = new List<SqlParameter>() { new SqlParameter($"@{SqlBulider<T>.KeyName}", id) };
-            return ExecuteSql<T>(sql, parameters.ToArray(), command =>
+            return ExecuteSql(sql, parameters.ToArray(), command =>
             {
                 var reader = command.ExecuteReader();
-                if (reader.Read())
-                {
-                    var entity = new T();
-                    var props = type.GetProperties();
-                    foreach (var prop in props)
-                    {
-                        var value = reader[prop.Name];
-                        prop.SetValue(entity, value == DBNull.Value ? null : value);
-                    }
-                    return entity;
-                }
-                else
-                {
-                    return default;
-                }
+                return ConvertList(reader).FirstOrDefault();
             });
 
             #region 封装前
@@ -69,6 +55,27 @@ namespace ORM
             //}
             //return default; 
             #endregion
+        }
+
+        /// <summary>
+        /// 过滤查找
+        /// </summary>
+        /// <param name="whereExp"></param>
+        /// <returns></returns>
+
+        public List<T> Where(Expression<Func<T, bool>> whereExp)
+        {
+            var vistor = new SqlVistor();
+            vistor.Visit(whereExp);
+            var whereSql = vistor.GetSql();
+
+            var type = typeof(T);
+            var sql = SqlBulider<T>.GetSql(SqlType.Select, whereSql);
+            return ExecuteSql(sql, null, command =>
+            {
+                var reader = command.ExecuteReader();
+                return ConvertList(reader);
+            });
         }
 
         /// <summary>
@@ -163,9 +170,28 @@ namespace ORM
             {
                 conn.Open();
                 var command = new SqlCommand(sql, conn);
-                command.Parameters.AddRange(sqlParameters);
+                if (sqlParameters!=null)
+                    command.Parameters.AddRange(sqlParameters);
                 return action.Invoke(command);
             }
+        }
+
+        private List<T> ConvertList(SqlDataReader reader)
+        {
+            var type = typeof(T);
+            var list = new List<T>();
+            while (reader.Read())
+            {
+                var entity = new T();
+                var props = type.GetProperties();
+                foreach (var prop in props)
+                {
+                    var value = reader[prop.Name];
+                    prop.SetValue(entity, value == DBNull.Value ? null : value);
+                }
+                list.Add(entity);
+            }
+            return list;
         }
     }
 }

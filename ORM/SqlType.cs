@@ -9,6 +9,7 @@ namespace ORM
         Find,
         Insert,
         Update,
-        Delete
+        Delete,
+        Select
     }
 }
