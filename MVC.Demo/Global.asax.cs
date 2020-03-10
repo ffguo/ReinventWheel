@@ -16,8 +16,8 @@ namespace MVC.Demo
             var defaultPath = new Dictionary<string, string>();
             defaultPath.Add("namespaces", "MVC.Demo.Controllers");
             defaultPath.Add("assembly", "MVC.Demo");
-            defaultPath.Add("controller", "home");
-            defaultPath.Add("action", "index");
+            defaultPath.Add("controller", "Home");
+            defaultPath.Add("action", "Index");
             defaultPath.Add("id", "");
             RouteTable.Routes.Add("Test", new Route("controller/action/id", defaultPath, new MvcRouteHandler()));
         }
