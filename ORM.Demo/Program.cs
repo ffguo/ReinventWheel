@@ -1,4 +1,6 @@
-﻿using System;
+﻿using ORM.Expressions;
+using System;
+using System.Linq;
 
 namespace ORM.Demo
 {
@@ -44,10 +46,18 @@ namespace ORM.Demo
             }
 
             {
-                var blogDal = new MyORM<Blogs>();
-                bool isDeleted = false;
-                var list = blogDal.Where(a => a.IsDeleted == isDeleted);
-                Console.WriteLine(list.Count);
+                var name = Console.ReadLine();
+                var isDelete = Console.ReadLine() == "Y";
+
+                var query = new MyORM<Blogs>().Table;
+                if (!string.IsNullOrEmpty(name))
+                    query = query.Where(a => a.Name == name);
+                query = query.Where(a => a.IsDeleted == isDelete);
+                var list = query.ToList();
+                foreach (var item in list)
+                {
+                    Console.WriteLine(item.Name + "-" + item.CreateTime);
+                }
             }
 
             Console.ReadKey();

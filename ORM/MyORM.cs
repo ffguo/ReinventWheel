@@ -15,9 +15,17 @@ namespace ORM
     /// 自定义ORM
     /// </summary>
     public class MyORM<T>
-        where T : BaseEntity, new()
+        //where T : BaseEntity, new()
     {
         private readonly string _connStr = "server=DESKTOP-UPKUKII;database=Write;uid=sa;password=sasasa";
+
+        public IQueryable<T> Table
+        {
+            get
+            {
+                return new MyQueryable<T>();
+            }
+        }
 
         /// <summary>
         /// 查找实体
@@ -32,7 +40,7 @@ namespace ORM
             return ExecuteSql(sql, parameters.ToArray(), command =>
             {
                 var reader = command.ExecuteReader();
-                return ConvertList(reader).FirstOrDefault();
+                return ConvertEntity(reader);
             });
 
             #region 封装前
@@ -55,27 +63,6 @@ namespace ORM
             //}
             //return default; 
             #endregion
-        }
-
-        /// <summary>
-        /// 过滤查找
-        /// </summary>
-        /// <param name="whereExp"></param>
-        /// <returns></returns>
-
-        public List<T> Where(Expression<Func<T, bool>> whereExp)
-        {
-            var vistor = new SqlVistor();
-            vistor.Visit(whereExp);
-            var whereSql = vistor.GetSql();
-
-            var type = typeof(T);
-            var sql = SqlBulider<T>.GetSql(SqlType.Select, whereSql);
-            return ExecuteSql(sql, null, command =>
-            {
-                var reader = command.ExecuteReader();
-                return ConvertList(reader);
-            });
         }
 
         /// <summary>
@@ -164,6 +151,15 @@ namespace ORM
             //});
         }
 
+        public List<T> GetList(string sql)
+        {
+            return ExecuteSql(sql, null, command =>
+            {
+                var reader = command.ExecuteReader();
+                return ConvertList(reader);
+            });
+        }
+
         private TR ExecuteSql<TR>(string sql, SqlParameter[] sqlParameters, Func<SqlCommand, TR> action)
         {
             using (SqlConnection conn = new SqlConnection(_connStr))
@@ -178,20 +174,33 @@ namespace ORM
 
         private List<T> ConvertList(SqlDataReader reader)
         {
-            var type = typeof(T);
             var list = new List<T>();
             while (reader.Read())
             {
-                var entity = new T();
-                var props = type.GetProperties();
-                foreach (var prop in props)
-                {
-                    var value = reader[prop.Name];
-                    prop.SetValue(entity, value == DBNull.Value ? null : value);
-                }
-                list.Add(entity);
+                list.Add(ConvertEntityBase(reader));
             }
             return list;
+        }
+
+        private T ConvertEntity(SqlDataReader reader)
+        {
+            if (reader.Read())
+                return ConvertEntityBase(reader);
+
+            return default;
+        }
+
+        private T ConvertEntityBase(SqlDataReader reader)
+        {
+            var type = typeof(T);
+            var entity = Activator.CreateInstance<T>();
+            var props = type.GetProperties();
+            foreach (var prop in props)
+            {
+                var value = reader[prop.Name];
+                prop.SetValue(entity, value == DBNull.Value ? null : value);
+            }
+            return entity;
         }
     }
 }
