@@ -15,6 +15,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MVC", "MVC\MVC.csproj", "{2
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MVC.Demo", "MVC.Demo\MVC.Demo.csproj", "{5368848B-D744-404F-BC24-786B0D75671B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Core", "Core\Core.csproj", "{E954E68A-A139-4619-B5F5-4883884CDB61}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Core.Demo", "Core.Demo\Core.Demo.csproj", "{5F7C5E44-E400-43F5-8486-0D1EE930E360}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -45,6 +49,14 @@ Global
 		{5368848B-D744-404F-BC24-786B0D75671B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5368848B-D744-404F-BC24-786B0D75671B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5368848B-D744-404F-BC24-786B0D75671B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E954E68A-A139-4619-B5F5-4883884CDB61}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E954E68A-A139-4619-B5F5-4883884CDB61}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E954E68A-A139-4619-B5F5-4883884CDB61}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E954E68A-A139-4619-B5F5-4883884CDB61}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5F7C5E44-E400-43F5-8486-0D1EE930E360}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5F7C5E44-E400-43F5-8486-0D1EE930E360}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5F7C5E44-E400-43F5-8486-0D1EE930E360}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5F7C5E44-E400-43F5-8486-0D1EE930E360}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
