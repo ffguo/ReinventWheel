@@ -17,7 +17,6 @@ namespace ORM
     public class MyORM<T>
         //where T : BaseEntity, new()
     {
-        private readonly string _connStr = "server=DESKTOP-UPKUKII;database=Write;uid=sa;password=sasasa";
 
         public IQueryable<T> Table
         {
@@ -37,7 +36,7 @@ namespace ORM
             var type = typeof(T);
             var sql = SqlBulider<T>.GetSql(SqlType.Find);
             var parameters = new List<SqlParameter>() { new SqlParameter($"@{SqlBulider<T>.KeyName}", id) };
-            return ExecuteSql(sql, parameters.ToArray(), command =>
+            return ExecuteSql(sql, parameters.ToArray(), SqlConnectionType.Read, command =>
             {
                 var reader = command.ExecuteReader();
                 return ConvertEntity(reader);
@@ -72,11 +71,16 @@ namespace ORM
         /// <returns></returns>
         public bool Insert(T entity)
         {
+            if(!entity.Validate())
+            {
+                throw new Exception("验证未通过");
+            }
+
             var type = typeof(T);
             var props = type.GetProperties().NoKey();
             var sql = SqlBulider<T>.GetSql(SqlType.Insert);
             var parameters = props.Select(a => new SqlParameter($"@{a.GetName<MyPropertyAttribute>()}", a.GetValue(entity) ?? DBNull.Value)).ToArray();
-            return ExecuteSql<bool>(sql, parameters, command =>
+            return ExecuteSql<bool>(sql, parameters, SqlConnectionType.Write, command =>
             {
                 return command.ExecuteNonQuery() > 0;
             });
@@ -108,7 +112,7 @@ namespace ORM
             var props = type.GetProperties();
             var sql = SqlBulider<T>.GetSql(SqlType.Update);
             var parameters = props.Select(a => new SqlParameter($"@{a.GetName<MyPropertyAttribute>()}", a.GetValue(entity) ?? DBNull.Value)).ToArray();
-            return ExecuteSql(sql, parameters, command =>
+            return ExecuteSql(sql, parameters, SqlConnectionType.Write, command =>
             {
                 return command.ExecuteNonQuery() > 0;
             });
@@ -124,7 +128,7 @@ namespace ORM
             var type = typeof(T);
             var sql = SqlBulider<T>.GetSql(SqlType.Delete);
             var parameters = new List<SqlParameter>() { new SqlParameter($"@{SqlBulider<T>.KeyName}", id) };
-            return ExecuteSql(sql, parameters.ToArray(), command =>
+            return ExecuteSql(sql, parameters.ToArray(), SqlConnectionType.Write, command =>
             {
                 return command.ExecuteNonQuery() > 0;
             });
@@ -153,16 +157,18 @@ namespace ORM
 
         public List<T> GetList(string sql)
         {
-            return ExecuteSql(sql, null, command =>
+            return ExecuteSql(sql, null, SqlConnectionType.Read, command =>
             {
                 var reader = command.ExecuteReader();
                 return ConvertList(reader);
             });
         }
 
-        private TR ExecuteSql<TR>(string sql, SqlParameter[] sqlParameters, Func<SqlCommand, TR> action)
+        private TR ExecuteSql<TR>(string sql, SqlParameter[] sqlParameters, SqlConnectionType sqlConnectionType, Func<SqlCommand, TR> action)
         {
-            using (SqlConnection conn = new SqlConnection(_connStr))
+            var connStr = SqlConnectionPool.GetConnectionString(sqlConnectionType);
+            Console.WriteLine(connStr);
+            using (SqlConnection conn = new SqlConnection(connStr))
             {
                 conn.Open();
                 var command = new SqlCommand(sql, conn);
